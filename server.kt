@@ -9,10 +9,10 @@ fun main() {
     
     val connection = DriverManager.getConnection(dbUrl)
     val statement = connection.createStatement()
-    statement.execute("CREATE TABLE IF NOT EXISTS profiles (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT, age TEXT, gender TEXT, disability_type TEXT)")
-    println("📦 InclusionMatrimony Database Ready hai!")
+    // 👉 NAYI TABLE: Ab device ki details save hongi
+    statement.execute("CREATE TABLE IF NOT EXISTS devices (id INTEGER PRIMARY KEY AUTOINCREMENT, owner_name TEXT, device_id TEXT, battery TEXT, status TEXT, emergency_contact TEXT)")
+    println("📦 VisionCompanion Database Ready hai!")
 
-    // 👉 CLOUD FIX: Render jo PORT dega hum wo use karenge, warna 8080. Aur "0.0.0.0" par chalayenge.
     val port = System.getenv("PORT")?.toInt() ?: 8080
     val myServer = HttpServer.create(InetSocketAddress("0.0.0.0", port), 0)
 
@@ -54,17 +54,17 @@ fun main() {
     myServer.createContext("/api/register") { request: HttpExchange ->
         if (request.requestMethod == "POST") {
             val incomingData = request.requestBody.readBytes().toString(Charsets.UTF_8)
-            val name = incomingData.substringAfter("\"name\":\"").substringBefore("\"")
-            val email = incomingData.substringAfter("\"email\":\"").substringBefore("\"")
-            val age = incomingData.substringAfter("\"age\":\"").substringBefore("\"")
-            val gender = incomingData.substringAfter("\"gender\":\"").substringBefore("\"")
-            val disability = incomingData.substringAfter("\"disability_type\":\"").substringBefore("\"")
+            val owner = incomingData.substringAfter("\"owner_name\":\"").substringBefore("\"")
+            val deviceId = incomingData.substringAfter("\"device_id\":\"").substringBefore("\"")
+            val battery = incomingData.substringAfter("\"battery\":\"").substringBefore("\"")
+            val status = incomingData.substringAfter("\"status\":\"").substringBefore("\"")
+            val emergency = incomingData.substringAfter("\"emergency_contact\":\"").substringBefore("\"")
 
-            val checkRs = connection.createStatement().executeQuery("SELECT count(*) AS count FROM profiles WHERE email = '$email'")
+            val checkRs = connection.createStatement().executeQuery("SELECT count(*) AS count FROM devices WHERE device_id = '$deviceId'")
             val count = if (checkRs.next()) checkRs.getInt("count") else 0
 
             if (count > 0) {
-                val jsonResponse = """{ "status": "error", "message": "❌ Yeh Email ID pehle se registered hai!" }"""
+                val jsonResponse = """{ "status": "error", "message": "❌ Yeh Device ID pehle se registered hai!" }"""
                 val bytes = jsonResponse.toByteArray(Charsets.UTF_8)
                 request.responseHeaders.add("Content-Type", "application/json; charset=UTF-8")
                 request.sendResponseHeaders(200, bytes.size.toLong())
@@ -72,10 +72,10 @@ fun main() {
                 out.write(bytes)
                 out.close()
             } else {
-                val insertQuery = "INSERT INTO profiles (name, email, age, gender, disability_type) VALUES ('$name', '$email', '$age', '$gender', '$disability')"
+                val insertQuery = "INSERT INTO devices (owner_name, device_id, battery, status, emergency_contact) VALUES ('$owner', '$deviceId', '$battery', '$status', '$emergency')"
                 connection.createStatement().execute(insertQuery)
 
-                val jsonResponse = """{ "status": "success", "message": "✅ Profile successfully ban gayi!" }"""
+                val jsonResponse = """{ "status": "success", "message": "✅ Device successfully register ho gaya!" }"""
                 val bytes = jsonResponse.toByteArray(Charsets.UTF_8)
                 request.responseHeaders.add("Content-Type", "application/json; charset=UTF-8")
                 request.sendResponseHeaders(200, bytes.size.toLong())
@@ -90,35 +90,22 @@ fun main() {
         if (request.requestMethod == "POST") {
             val incomingData = request.requestBody.readBytes().toString(Charsets.UTF_8)
             val id = incomingData.substringAfter("\"id\":\"").substringBefore("\"")
-            val name = incomingData.substringAfter("\"name\":\"").substringBefore("\"")
-            val email = incomingData.substringAfter("\"email\":\"").substringBefore("\"")
-            val age = incomingData.substringAfter("\"age\":\"").substringBefore("\"")
-            val gender = incomingData.substringAfter("\"gender\":\"").substringBefore("\"")
-            val disability = incomingData.substringAfter("\"disability_type\":\"").substringBefore("\"")
+            val owner = incomingData.substringAfter("\"owner_name\":\"").substringBefore("\"")
+            val deviceId = incomingData.substringAfter("\"device_id\":\"").substringBefore("\"")
+            val battery = incomingData.substringAfter("\"battery\":\"").substringBefore("\"")
+            val status = incomingData.substringAfter("\"status\":\"").substringBefore("\"")
+            val emergency = incomingData.substringAfter("\"emergency_contact\":\"").substringBefore("\"")
 
-            val checkRs = connection.createStatement().executeQuery("SELECT count(*) AS count FROM profiles WHERE email = '$email' AND id != $id")
-            val count = if (checkRs.next()) checkRs.getInt("count") else 0
+            val updateQuery = "UPDATE devices SET owner_name = '$owner', device_id = '$deviceId', battery = '$battery', status = '$status', emergency_contact = '$emergency' WHERE id = $id"
+            connection.createStatement().execute(updateQuery)
 
-            if (count > 0) {
-                val jsonResponse = """{ "status": "error", "message": "❌ Yeh Email pehle se kisi aur ke paas hai!" }"""
-                val bytes = jsonResponse.toByteArray(Charsets.UTF_8)
-                request.responseHeaders.add("Content-Type", "application/json; charset=UTF-8")
-                request.sendResponseHeaders(200, bytes.size.toLong())
-                val out = request.responseBody
-                out.write(bytes)
-                out.close()
-            } else {
-                val updateQuery = "UPDATE profiles SET name = '$name', email = '$email', age = '$age', gender = '$gender', disability_type = '$disability' WHERE id = $id"
-                connection.createStatement().execute(updateQuery)
-
-                val jsonResponse = """{ "status": "success", "message": "✅ Profile Update ho gayi!" }"""
-                val bytes = jsonResponse.toByteArray(Charsets.UTF_8)
-                request.responseHeaders.add("Content-Type", "application/json; charset=UTF-8")
-                request.sendResponseHeaders(200, bytes.size.toLong())
-                val out = request.responseBody
-                out.write(bytes)
-                out.close()
-            }
+            val jsonResponse = """{ "status": "success", "message": "✅ Device status update ho gaya!" }"""
+            val bytes = jsonResponse.toByteArray(Charsets.UTF_8)
+            request.responseHeaders.add("Content-Type", "application/json; charset=UTF-8")
+            request.sendResponseHeaders(200, bytes.size.toLong())
+            val out = request.responseBody
+            out.write(bytes)
+            out.close()
         }
     }
 
@@ -127,10 +114,10 @@ fun main() {
             val incomingData = request.requestBody.readBytes().toString(Charsets.UTF_8)
             val idStr = incomingData.substringAfter("\"id\":").substringBefore("}").trim()
 
-            val deleteQuery = "DELETE FROM profiles WHERE id = $idStr"
+            val deleteQuery = "DELETE FROM devices WHERE id = $idStr"
             connection.createStatement().execute(deleteQuery)
 
-            val jsonResponse = """{ "status": "success", "message": "Profile database se hamesha ke liye delete ho gayi!" }"""
+            val jsonResponse = """{ "status": "success", "message": "Device database se delete ho gaya!" }"""
             val bytes = jsonResponse.toByteArray(Charsets.UTF_8)
             request.responseHeaders.add("Content-Type", "application/json; charset=UTF-8")
             request.sendResponseHeaders(200, bytes.size.toLong())
@@ -142,18 +129,18 @@ fun main() {
 
     myServer.createContext("/api/users") { request: HttpExchange ->
         if (request.requestMethod == "GET") {
-            val resultSet = connection.createStatement().executeQuery("SELECT * FROM profiles")
+            val resultSet = connection.createStatement().executeQuery("SELECT * FROM devices")
             var jsonResponse = "["
             var isFirst = true
             while (resultSet.next()) {
                 if (!isFirst) jsonResponse += ","
                 val id = resultSet.getInt("id")
-                val name = resultSet.getString("name")
-                val email = resultSet.getString("email")
-                val age = resultSet.getString("age")
-                val gender = resultSet.getString("gender")
-                val disability = resultSet.getString("disability_type")
-                jsonResponse += """{"id": $id, "name": "$name", "email": "$email", "age": "$age", "gender": "$gender", "disability_type": "$disability"}"""
+                val owner = resultSet.getString("owner_name")
+                val deviceId = resultSet.getString("device_id")
+                val battery = resultSet.getString("battery")
+                val status = resultSet.getString("status")
+                val emergency = resultSet.getString("emergency_contact")
+                jsonResponse += """{"id": $id, "owner_name": "$owner", "device_id": "$deviceId", "battery": "$battery", "status": "$status", "emergency_contact": "$emergency"}"""
                 isFirst = false
             }
             jsonResponse += "]"
@@ -169,23 +156,23 @@ fun main() {
 
     myServer.createContext("/api/export") { request: HttpExchange ->
         if (request.requestMethod == "GET") {
-            val resultSet = connection.createStatement().executeQuery("SELECT * FROM profiles")
+            val resultSet = connection.createStatement().executeQuery("SELECT * FROM devices")
             
-            var csvData = "ID,Name,Email,Age,Gender,Disability Type\n"
+            var csvData = "ID,Owner Name,Device ID,Battery,Status,Emergency Contact\n"
             
             while (resultSet.next()) {
                 val id = resultSet.getInt("id")
-                val name = resultSet.getString("name")
-                val email = resultSet.getString("email")
-                val age = resultSet.getString("age")
-                val gender = resultSet.getString("gender")
-                val disability = resultSet.getString("disability_type")
-                csvData += "$id,$name,$email,$age,$gender,$disability\n"
+                val owner = resultSet.getString("owner_name")
+                val deviceId = resultSet.getString("device_id")
+                val battery = resultSet.getString("battery")
+                val status = resultSet.getString("status")
+                val emergency = resultSet.getString("emergency_contact")
+                csvData += "$id,$owner,$deviceId,$battery,$status,$emergency\n"
             }
 
             val bytes = csvData.toByteArray(Charsets.UTF_8)
             request.responseHeaders.add("Content-Type", "text/csv; charset=UTF-8")
-            request.responseHeaders.add("Content-Disposition", "attachment; filename=\"matrimony_profiles.csv\"")
+            request.responseHeaders.add("Content-Disposition", "attachment; filename=\"device_logs.csv\"")
             request.sendResponseHeaders(200, bytes.size.toLong())
             
             val out = request.responseBody
@@ -194,7 +181,8 @@ fun main() {
         }
     }
 
-    println("🚀 INCLUSION MATRIMONY BACKEND START HO GAYA HAI!")
+   println("🚀 VISION COMPANION BACKEND START HO GAYA HAI!")
     println("👉 Server Cloud Port $port par chal raha hai...")
+    println("👉 Local Check ke liye yahan click karein: http://localhost:$port/") // Yeh line add karni hai
     myServer.start()
 }
