@@ -153,6 +153,15 @@
         }
 
         function editUser(id, name, empId, dept, status, mobile) {
+            // 🔒 PIN Security Check for Editing
+            let pin = prompt("🔐 Enter HR Admin PIN to Edit Record:");
+            if (pin === null) return; // Agar cancel kiya toh wapas chale jao
+            
+            if (pin !== "66372") {
+                alert("❌ Wrong PIN! Access Denied.");
+                return;
+            }
+
             document.getElementById("userId").value = id;
             document.getElementById("empNameInput").value = name;
             document.getElementById("empIdInput").value = empId;
@@ -160,11 +169,22 @@
             document.getElementById("workStatusInput").value = status;
             document.getElementById("mobileInput").value = mobile;
             const btn = document.getElementById("submitBtn");
-            btn.innerText = "Update Record"; btn.className = "btn-orange";
+            btn.innerText = "Update Record"; 
+            btn.className = "btn-orange";
+            window.scrollTo({ top: 0, behavior: 'smooth' }); // Upar form par le jao
         }
 
         function deleteUser(dbId) {
-            if(confirm("Are you sure you want to remove this employee record?")) {
+            // 🔒 PIN Security Check for Deleting
+            let pin = prompt("🔐 Enter HR Admin PIN to Delete Record:");
+            if (pin === null) return;
+
+            if (pin !== "66372") {
+                alert("❌ Wrong PIN! Access Denied.");
+                return;
+            }
+
+            if(confirm("⚠️ Are you sure you want to remove this employee record?")) {
                 fetch('/api/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: dbId }) })
                 .then(response => response.json()).then(result => { loadData(); });
             }
