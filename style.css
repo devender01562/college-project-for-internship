@@ -1,0 +1,141 @@
+/* style.css - Premium Modern Design with Dark Mode */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f2f5;
+    padding: 40px;
+    color: #333;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+h2 {
+    color: #1a73e8;
+    margin-bottom: 20px;
+}
+
+/* Form Styling */
+.form-container {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    margin-bottom: 40px;
+    transition: background-color 0.3s;
+}
+
+.form-container label {
+    font-weight: bold;
+    color: #555;
+}
+
+.form-container input, .form-container select {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0 20px 0;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 15px;
+}
+
+/* Search Box Styling */
+.search-box {
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 2px solid #1a73e8;
+    border-radius: 8px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+/* Table Styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+th, td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #1a73e8;
+    color: white;
+    font-size: 16px;
+}
+
+tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Buttons */
+button {
+    padding: 10px 20px;
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-green { background: #28a745; width: 100%; font-size: 16px; padding: 12px; margin-top: 10px; }
+.btn-green:hover { background: #218838; }
+
+.btn-blue { background: #007bff; margin-right: 5px; margin-bottom: 5px; }
+.btn-blue:hover { background: #0069d9; }
+
+.btn-orange { background: #fd7e14; width: 100%; font-size: 16px; padding: 12px; margin-top: 10px;}
+.btn-orange:hover { background: #e86e10; }
+
+.btn-red { background: #dc3545; }
+.btn-red:hover { background: #c82333; }
+
+/* 🌓 DARK MODE MAGIC START */
+body.dark-mode {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+body.dark-mode h2 {
+    color: #64b5f6;
+}
+
+body.dark-mode .form-container {
+    background-color: #1e1e1e;
+    box-shadow: 0 4px 10px rgba(255,255,255,0.05);
+}
+
+body.dark-mode .form-container label {
+    color: #aaa;
+}
+
+body.dark-mode input, body.dark-mode select {
+    background-color: #2c2c2c;
+    color: white;
+    border: 1px solid #444;
+}
+
+body.dark-mode table {
+    background-color: #1e1e1e;
+}
+
+body.dark-mode th {
+    background-color: #333;
+    border-bottom: 2px solid #555;
+}
+
+body.dark-mode td {
+    border-bottom: 1px solid #333;
+}
+
+body.dark-mode tr:hover {
+    background-color: #2a2a2a;
+}
+/* DARK MODE MAGIC END */
