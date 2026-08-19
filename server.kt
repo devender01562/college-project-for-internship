@@ -9,11 +9,12 @@ fun main() {
     
     val connection = DriverManager.getConnection(dbUrl)
     val statement = connection.createStatement()
-    // 👉 NAYI TABLE: Ab isme age, gender aur disability_type bhi save hoga
     statement.execute("CREATE TABLE IF NOT EXISTS profiles (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT, age TEXT, gender TEXT, disability_type TEXT)")
     println("📦 InclusionMatrimony Database Ready hai!")
 
-    val myServer = HttpServer.create(InetSocketAddress(8080), 0)
+    // 👉 CLOUD FIX: Render jo PORT dega hum wo use karenge, warna 8080. Aur "0.0.0.0" par chalayenge.
+    val port = System.getenv("PORT")?.toInt() ?: 8080
+    val myServer = HttpServer.create(InetSocketAddress("0.0.0.0", port), 0)
 
     myServer.createContext("/") { request: HttpExchange ->
         if (request.requestMethod == "GET") {
@@ -50,7 +51,6 @@ fun main() {
         }
     }
 
-    // 👉 POST API (Create Profile)
     myServer.createContext("/api/register") { request: HttpExchange ->
         if (request.requestMethod == "POST") {
             val incomingData = request.requestBody.readBytes().toString(Charsets.UTF_8)
@@ -86,7 +86,6 @@ fun main() {
         }
     }
 
-    // 👉 UPDATE API (Edit Profile)
     myServer.createContext("/api/update") { request: HttpExchange ->
         if (request.requestMethod == "POST") {
             val incomingData = request.requestBody.readBytes().toString(Charsets.UTF_8)
@@ -123,7 +122,6 @@ fun main() {
         }
     }
 
-    // 👉 DELETE API
     myServer.createContext("/api/delete") { request: HttpExchange ->
         if (request.requestMethod == "POST") {
             val incomingData = request.requestBody.readBytes().toString(Charsets.UTF_8)
@@ -142,7 +140,6 @@ fun main() {
         }
     }
 
-    // 👉 GET API (Load Profiles)
     myServer.createContext("/api/users") { request: HttpExchange ->
         if (request.requestMethod == "GET") {
             val resultSet = connection.createStatement().executeQuery("SELECT * FROM profiles")
@@ -170,7 +167,6 @@ fun main() {
         }
     }
 
-    // 👉 EXCEL (CSV) EXPORT API (Updated fields)
     myServer.createContext("/api/export") { request: HttpExchange ->
         if (request.requestMethod == "GET") {
             val resultSet = connection.createStatement().executeQuery("SELECT * FROM profiles")
@@ -199,6 +195,6 @@ fun main() {
     }
 
     println("🚀 INCLUSION MATRIMONY BACKEND START HO GAYA HAI!")
-    println("👉 Website yahan dekhein: http://localhost:8080/")
+    println("👉 Server Cloud Port $port par chal raha hai...")
     myServer.start()
 }
