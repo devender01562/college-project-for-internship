@@ -1,5 +1,5 @@
-# 1. Base Image - Java 17 wali machine use karo
-FROM openjdk:17-slim
+# 1. Base Image - Naya aur supported Java 17 image
+FROM eclipse-temurin:17-jdk-jammy
 
 # 2. Kotlin aur zaroori tools install karo
 RUN apt-get update && apt-get install -y wget unzip
@@ -13,7 +13,7 @@ WORKDIR /app
 # 4. Apna saara code us folder mein copy karo
 COPY . /app
 
-# 5. SQLite (Database) ki jar file download karo (Kyunki humne isko upload nahi kiya tha)
+# 5. SQLite (Database) ki jar file download karo
 RUN wget https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/3.42.0.0/sqlite-jdbc-3.42.0.0.jar
 
 # 6. Kotlin code ko compile karo
