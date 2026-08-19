@@ -2,191 +2,196 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>VisionCompanion - IoT Dashboard</title>
+    <title>TechCorp - HR Management Portal</title>
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <button onclick="toggleDarkMode()" style="position: absolute; top: 20px; right: 40px; background-color: #333; color: white; padding: 10px 15px; border-radius: 20px; border: 2px solid #555; cursor: pointer;">🌓 Dark Mode</button>
-
-    <h2>🕶️ VisionCompanion - Device Management</h2>
     
-    <div class="form-container" style="max-width: 550px;">
-        <form id="addForm">
-            <input type="hidden" id="userId" value="">
-
-            <label>Owner Name (User ka naam):</label>
-            <input type="text" id="ownerInput" required placeholder="User ka naam...">
-            
-            <label>Device ID:</label>
-            <input type="text" id="deviceIdInput" required placeholder="Eg: VC-001">
-
-            <label>Battery Level (%):</label>
-            <input type="number" id="batteryInput" required placeholder="Eg: 85" min="0" max="100">
-
-            <label>Device Status:</label>
-            <select id="statusInput" required>
-                <option value="">Select Status...</option>
-                <option value="Active">🟢 Active (Chal raha hai)</option>
-                <option value="Offline">🔴 Offline (Band hai)</option>
-                <option value="Needs Repair">🟡 Needs Repair (Kharab hai)</option>
-            </select>
-
-            <label>Emergency Contact No:</label>
-            <input type="text" id="emergencyInput" required placeholder="Mobile number..." maxlength="10">
-            
-            <button id="submitBtn" class="btn-green" type="submit">Register Device</button>
-        </form>
+    <!-- Hero Banner -->
+    <div class="hero-section">
+        <button onclick="toggleDarkMode()" style="position: absolute; top: 20px; right: 20px; background-color: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.5);">🌓 Dark Mode</button>
+        <h1>🏢 TechCorp HR Portal</h1>
+        <p>Enterprise Workforce & Analytics Dashboard</p>
     </div>
 
-    <h2>📊 Connected Devices Network</h2>
+    <!-- Live Analytics Cards -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <h3>Total Employees</h3>
+            <div class="count" id="totalCount">0</div>
+        </div>
+        <div class="stat-card card-green">
+            <h3>Work From Home</h3>
+            <div class="count" id="wfhCount">0</div>
+        </div>
+        <div class="stat-card card-red">
+            <h3>On Leave</h3>
+            <div class="count" id="leaveCount">0</div>
+        </div>
+    </div>
     
-    <input type="text" id="searchInput" class="search-box" onkeyup="searchTable()" placeholder="🔍 Device ID ya Owner Name se dhundhein...">
-    
-    <button onclick="downloadExcel()" class="btn-green" style="margin-bottom: 20px; background-color: #16a085; width: auto;">📥 Download Logs (Excel)</button>
-    
-    <table id="usersTable">
-        <tr>
-            <th>Sr. No.</th>
-            <th>Owner Name</th>
-            <th>Device ID</th>
-            <th>Battery</th>
-            <th>Status</th>
-            <th>Emergency Contact</th>
-            <th>Action</th>
-        </tr>
-    </table>
+    <div class="dashboard-grid">
+        <!-- Form Section -->
+        <div class="form-section">
+            <h2 style="color: #2980b9; font-size: 1.5em; margin-top: 0;">➕ Onboard Employee</h2>
+            <div class="form-container">
+                <form id="addForm">
+                    <input type="hidden" id="userId" value="">
+                    
+                    <label>👤 Employee Name:</label>
+                    <input type="text" id="empNameInput" required placeholder="Full name...">
+                    
+                    <label>🆔 Employee ID:</label>
+                    <input type="text" id="empIdInput" required placeholder="Eg: EMP-101">
+
+                    <label>🏢 Department:</label>
+                    <select id="departmentInput" required>
+                        <option value="">Select Department...</option>
+                        <option value="IT/Engineering">IT / Engineering</option>
+                        <option value="Human Resources">Human Resources (HR)</option>
+                        <option value="Finance">Finance & Accounts</option>
+                        <option value="Operations">Operations</option>
+                    </select>
+
+                    <label>📊 Work Status:</label>
+                    <select id="workStatusInput" required>
+                        <option value="">Select Status...</option>
+                        <option value="Office">🏢 In Office</option>
+                        <option value="WFH">💻 Work From Home</option>
+                        <option value="On Leave">🏖️ On Leave</option>
+                    </select>
+
+                    <label>📞 Contact Number:</label>
+                    <input type="text" id="mobileInput" required placeholder="10-digit mobile number..." maxlength="10">
+                    
+                    <button id="submitBtn" class="btn-green" type="submit">💾 Save Record</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Table Section -->
+        <div class="table-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h2 style="color: #2980b9; font-size: 1.5em; margin: 0;">👥 Workforce Directory</h2>
+                <button onclick="downloadExcel()" class="btn-green" style="width: auto; background-color: #16a085; padding: 10px 15px; font-size: 14px;">📥 Export Excel Sheet</button>
+            </div>
+            
+            <input type="text" id="searchInput" class="search-box" onkeyup="searchTable()" placeholder="🔍 Search by Name, ID, or Department...">
+            
+            <table id="usersTable">
+                <tr>
+                    <th>Emp ID</th>
+                    <th>Name & Contact</th>
+                    <th>Department</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="footer">
+        🚀 Developed for Professional Placement Project | Powered by Kotlin, SQLite & Web Technologies
+    </div>
 
     <script>
-        function toggleDarkMode() {
-            document.body.classList.toggle("dark-mode");
-        }
+        function toggleDarkMode() { document.body.classList.toggle("dark-mode"); }
 
         function loadData() {
             fetch('/api/users')
                 .then(response => response.json())
                 .then(data => {
                     const table = document.getElementById('usersTable');
-                    table.innerHTML = '<tr><th>Sr. No.</th><th>Owner Name</th><th>Device ID</th><th>Battery</th><th>Status</th><th>Emergency Contact</th><th>Action</th></tr>';
+                    table.innerHTML = '<tr><th>Emp ID</th><th>Name & Contact</th><th>Department</th><th>Status</th><th>Action</th></tr>';
                     
-                    let serialNumber = 1; 
+                    // Analytics Calculation
+                    let total = data.length;
+                    let wfh = data.filter(d => d.work_status === 'WFH').length;
+                    let onLeave = data.filter(d => d.work_status === 'On Leave').length;
                     
-                    data.forEach(device => {
-                        let statusIcon = device.status === 'Active' ? '🟢' : (device.status === 'Offline' ? '🔴' : '🟡');
+                    document.getElementById('totalCount').innerText = total;
+                    document.getElementById('wfhCount').innerText = wfh;
+                    document.getElementById('leaveCount').innerText = onLeave;
+
+                    data.forEach(emp => {
+                        let statusIcon = emp.work_status === 'Office' ? '🏢' : (emp.work_status === 'WFH' ? '💻' : '🏖️');
                         table.innerHTML += "<tr>" + 
-                            "<td>" + serialNumber + "</td>" + 
-                            "<td>" + device.owner_name + "</td>" + 
-                            "<td><strong>" + device.device_id + "</strong></td>" + 
-                            "<td>" + device.battery + "%</td>" + 
-                            "<td>" + statusIcon + " " + device.status + "</td>" + 
-                            "<td>" + device.emergency_contact + "</td>" + 
+                            "<td><strong>" + emp.emp_id + "</strong></td>" + 
+                            "<td>" + emp.emp_name + "<br><small style='color:gray'>📞 " + emp.mobile + "</small></td>" + 
+                            "<td>" + emp.department + "</td>" + 
+                            "<td>" + statusIcon + " " + emp.work_status + "</td>" + 
                             "<td>" + 
-                                "<button onclick=\"speakStatus('" + device.device_id + "', '" + device.owner_name + "', '" + device.battery + "', '" + device.status + "')\" class='btn-blue' style='background-color: #8e44ad;'>🔊 Audio Status</button>" +
-                                "<button onclick=\"editUser(" + device.id + ", '" + device.owner_name + "', '" + device.device_id + "', '" + device.battery + "', '" + device.status + "', '" + device.emergency_contact + "')\" class='btn-blue'>Edit</button>" + 
-                                "<button onclick='deleteUser(" + device.id + ")' class='btn-red'>Delete</button>" + 
+                                "<button onclick=\"speakStatus('" + emp.emp_name + "', '" + emp.emp_id + "', '" + emp.department + "', '" + emp.work_status + "')\" class='btn-blue' style='background-color: #8e44ad;'>🔊 Audio</button>" +
+                                "<button onclick=\"editUser(" + emp.id + ", '" + emp.emp_name + "', '" + emp.emp_id + "', '" + emp.department + "', '" + emp.work_status + "', '" + emp.mobile + "')\" class='btn-blue'>Edit</button>" + 
+                                "<button onclick='deleteUser(" + emp.id + ")' class='btn-red'>X</button>" + 
                             "</td>" + 
                             "</tr>";
-                        serialNumber++; 
                     });
                 });
         }
 
-        function speakStatus(deviceId, owner, battery, status) {
+        function speakStatus(name, id, dept, status) {
             window.speechSynthesis.cancel();
-            let textToSpeak = "Status for Device " + deviceId + ". Owner is " + owner + ". Battery level is " + battery + " percent. Device is currently " + status + ".";
+            let textToSpeak = "Employee " + name + ", ID " + id + ", is in the " + dept + " department. Current work status is " + status + ".";
             let speech = new SpeechSynthesisUtterance(textToSpeak);
-            speech.rate = 0.9; 
-            window.speechSynthesis.speak(speech);
+            speech.rate = 0.9; window.speechSynthesis.speak(speech);
         }
 
         function searchTable() {
             let input = document.getElementById("searchInput").value.toLowerCase();
             let table = document.getElementById("usersTable");
             let tr = table.getElementsByTagName("tr");
-
             for (let i = 1; i < tr.length; i++) {
-                let ownerCol = tr[i].getElementsByTagName("td")[1];
-                let deviceCol = tr[i].getElementsByTagName("td")[2];
-                
-                if (ownerCol || deviceCol) {
-                    let textToSearch = (ownerCol.innerText + " " + deviceCol.innerText).toLowerCase();
-                    if (textToSearch.indexOf(input) > -1) {
-                        tr[i].style.display = "";
-                    } else {
-                        tr[i].style.display = "none";
-                    }
+                let idCol = tr[i].getElementsByTagName("td")[0];
+                let nameCol = tr[i].getElementsByTagName("td")[1];
+                let deptCol = tr[i].getElementsByTagName("td")[2];
+                if (idCol || nameCol || deptCol) {
+                    let textToSearch = (idCol.innerText + " " + nameCol.innerText + " " + deptCol.innerText).toLowerCase();
+                    tr[i].style.display = textToSearch.indexOf(input) > -1 ? "" : "none";
                 }
             }
         }
 
-        function editUser(id, owner, deviceId, battery, status, emergency) {
+        function editUser(id, name, empId, dept, status, mobile) {
             document.getElementById("userId").value = id;
-            document.getElementById("ownerInput").value = owner;
-            document.getElementById("deviceIdInput").value = deviceId;
-            document.getElementById("batteryInput").value = battery;
-            document.getElementById("statusInput").value = status;
-            document.getElementById("emergencyInput").value = emergency;
-            
+            document.getElementById("empNameInput").value = name;
+            document.getElementById("empIdInput").value = empId;
+            document.getElementById("departmentInput").value = dept;
+            document.getElementById("workStatusInput").value = status;
+            document.getElementById("mobileInput").value = mobile;
             const btn = document.getElementById("submitBtn");
-            btn.innerText = "Update Device";
-            btn.className = "btn-orange";
+            btn.innerText = "Update Record"; btn.className = "btn-orange";
         }
 
         function deleteUser(dbId) {
-            if(confirm("Are you sure you want to remove this device?")) {
-                fetch('/api/delete', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: dbId }) 
-                })
-                .then(response => response.json())
-                .then(result => {
-                    loadData(); 
-                });
+            if(confirm("Are you sure you want to remove this employee record?")) {
+                fetch('/api/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: dbId }) })
+                .then(response => response.json()).then(result => { loadData(); });
             }
         }
 
         document.getElementById("addForm").addEventListener("submit", function(event) {
             event.preventDefault();
             const userId = document.getElementById("userId").value;
-            const inputOwner = document.getElementById("ownerInput").value;
-            const inputDeviceId = document.getElementById("deviceIdInput").value;
-            const inputBattery = document.getElementById("batteryInput").value;
-            const inputStatus = document.getElementById("statusInput").value;
-            const inputEmergency = document.getElementById("emergencyInput").value;
-            
-            let apiUrl = '/api/register';
-            if (userId !== "") { apiUrl = '/api/update'; }
+            let apiUrl = userId !== "" ? '/api/update' : '/api/register';
             
             fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
-                    id: String(userId), 
-                    owner_name: inputOwner, 
-                    device_id: inputDeviceId,
-                    battery: inputBattery,
-                    status: inputStatus,
-                    emergency_contact: inputEmergency
+                    id: String(userId), emp_name: document.getElementById("empNameInput").value, 
+                    emp_id: document.getElementById("empIdInput").value, department: document.getElementById("departmentInput").value,
+                    work_status: document.getElementById("workStatusInput").value, mobile: document.getElementById("mobileInput").value
                 })
-            })
-            .then(response => response.json())
-            .then(result => {
-                alert(result.message);
+            }).then(response => response.json()).then(result => {
                 if(result.status === "success") {
-                    document.getElementById("addForm").reset();
-                    document.getElementById("userId").value = "";
-                    const btn = document.getElementById("submitBtn");
-                    btn.innerText = "Register Device";
-                    btn.className = "btn-green";
+                    document.getElementById("addForm").reset(); document.getElementById("userId").value = "";
+                    const btn = document.getElementById("submitBtn"); btn.innerText = "💾 Save Record"; btn.className = "btn-green";
                     loadData();
                 }
             });
         });
 
-        function downloadExcel() {
-            window.location.href = '/api/export';
-        }
-
+        function downloadExcel() { window.location.href = '/api/export'; }
         loadData();
     </script>
 </body>
