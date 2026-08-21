@@ -59,6 +59,24 @@ fun main() {
             }
         }
     }
+    // --- 3. ROUTE: JS (Serve script.js) ---
+    // 🔥 Yeh handler zaroori hai taaki JavaScript load ho!
+    myServer.createContext("/script.js") { request: HttpExchange ->
+        if (request.requestMethod == "GET") {
+            val jsFile = File("script.js")
+            if (jsFile.exists()) {
+                val bytes = jsFile.readBytes()
+                // Note: JavaScript ka Content-Type application/javascript hota hai
+                request.responseHeaders.set("Content-Type", "application/javascript; charset=UTF-8")
+                request.sendResponseHeaders(200, bytes.size.toLong())
+                val out = request.responseBody
+                out.write(bytes)
+                out.close()
+            } else {
+                request.sendResponseHeaders(404, -1)
+            }
+        }
+    }
 
     myServer.createContext("/api/register") { request: HttpExchange ->
         if (request.requestMethod == "POST") {

@@ -1,218 +1,115 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TechCorp - HR Management Portal</title>
+    <!-- CSS file linking -->
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    
-    <!-- Hero Banner -->
-    <div class="hero-section">
-        <button onclick="toggleDarkMode()" style="position: absolute; top: 20px; right: 20px; background-color: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.5);">🌓 Dark Mode</button>
-        <h1>🏢 TechCorp HR Portal</h1>
-        <p>Enterprise Workforce & Analytics Dashboard</p>
+
+    <!-- 🔐 Login Section (Initially Visible) -->
+    <div id="login-container">
+        <h2>🏢 TechCorp Admin Login</h2>
+        <p style="color: gray; font-size: 14px;">Enter admin PIN to access portal</p>
+        <input type="password" id="adminPin" placeholder="Enter PIN" maxlength="4">
+        <br>
+        <button onclick="checkLogin()">Login</button>
     </div>
 
-    <!-- Live Analytics Cards -->
-    <div class="stats-container">
-        <div class="stat-card">
-            <h3>Total Employees</h3>
-            <div class="count" id="totalCount">0</div>
+    <!-- 🚀 Main Dashboard Content (Initially Hidden) -->
+    <div id="dashboard-content" style="display: none;">
+        <!-- Hero Banner -->
+        <div class="hero-section">
+            <button onclick="toggleDarkMode()" class="dark-mode-btn">🌓 Dark Mode</button>
+            <h1>🏢 TechCorp HR Portal</h1>
+            <p>Enterprise Workforce & Analytics Dashboard</p>
         </div>
-        <div class="stat-card card-green">
-            <h3>Work From Home</h3>
-            <div class="count" id="wfhCount">0</div>
+
+        <!-- Analytics Cards -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <h3>Total Employees</h3>
+                <div class="count" id="totalCount">0</div>
+            </div>
+            <div class="stat-card card-green">
+                <h3>Work From Home</h3>
+                <div class="count" id="wfhCount">0</div>
+            </div>
+            <div class="stat-card card-red">
+                <h3>On Leave</h3>
+                <div class="count" id="leaveCount">0</div>
+            </div>
         </div>
-        <div class="stat-card card-red">
-            <h3>On Leave</h3>
-            <div class="count" id="leaveCount">0</div>
-        </div>
-    </div>
-    
-    <div class="dashboard-grid">
-        <!-- Form Section -->
-        <div class="form-section">
-            <h2 style="color: #2980b9; font-size: 1.5em; margin-top: 0;">➕ Onboard Employee</h2>
-            <div class="form-container">
-                <form id="addForm">
-                    <input type="hidden" id="userId" value="">
-                    
-                    <label>👤 Employee Name:</label>
-                    <input type="text" id="empNameInput" required placeholder="Full name...">
-                    
-                    <label>🆔 Employee ID:</label>
-                    <input type="text" id="empIdInput" required placeholder="Eg: EMP-101">
+        
+        <div class="dashboard-grid">
+            <!-- Form Onboarding Section -->
+            <div class="form-section">
+                <h2 style="color: #2980b9; font-size: 1.5em; margin-top: 0;">➕ Onboard Employee</h2>
+                <div class="form-container">
+                    <form id="addForm">
+                        <input type="hidden" id="userId" value="">
+                        
+                        <label>👤 Employee Name:</label>
+                        <input type="text" id="empNameInput" required placeholder="Full name...">
+                        
+                        <label>🆔 Employee ID:</label>
+                        <input type="text" id="empIdInput" required placeholder="Eg: EMP-101">
 
-                    <label>🏢 Department:</label>
-                    <select id="departmentInput" required>
-                        <option value="">Select Department...</option>
-                        <option value="IT/Engineering">IT / Engineering</option>
-                        <option value="Human Resources">Human Resources (HR)</option>
-                        <option value="Finance">Finance & Accounts</option>
-                        <option value="Operations">Operations</option>
-                    </select>
+                        <label>🏢 Department:</label>
+                        <select id="departmentInput" required>
+                            <option value="">Select Department...</option>
+                            <option value="IT/Engineering">IT / Engineering</option>
+                            <option value="Human Resources">Human Resources (HR)</option>
+                            <option value="Finance">Finance & Accounts</option>
+                            <option value="Operations">Operations</option>
+                        </select>
 
-                    <label>📊 Work Status:</label>
-                    <select id="workStatusInput" required>
-                        <option value="">Select Status...</option>
-                        <option value="Office">🏢 In Office</option>
-                        <option value="WFH">💻 Work From Home</option>
-                        <option value="On Leave">🏖️ On Leave</option>
-                    </select>
+                        <label>📊 Work Status:</label>
+                        <select id="workStatusInput" required>
+                            <option value="">Select Status...</option>
+                            <option value="Office">🏢 In Office</option>
+                            <option value="WFH">💻 Work From Home</option>
+                            <option value="On Leave">🏖️ On Leave</option>
+                        </select>
 
-                    <label>📞 Contact Number:</label>
-                    <input type="text" id="mobileInput" required placeholder="10-digit mobile number..." maxlength="10">
-                    
-                    <button id="submitBtn" class="btn-green" type="submit">💾 Save Record</button>
-                </form>
+                        <label>📞 Contact Number:</label>
+                        <input type="text" id="mobileInput" required placeholder="10-digit number..." maxlength="10">
+                        
+                        <button id="submitBtn" class="btn-green" type="submit">💾 Save Record</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Workforce Directory Section -->
+            <div class="table-section">
+                <div class="table-header">
+                    <h2 style="color: #2980b9; font-size: 1.5em; margin: 0;">👥 Workforce Directory</h2>
+                    <button onclick="downloadExcel()" class="btn-green export-btn">📥 Export Excel</button>
+                </div>
+                
+                <input type="text" id="searchInput" class="search-box" onkeyup="searchTable()" placeholder="🔍 Search by Name, ID, or Department...">
+                
+                <table id="usersTable">
+                    <tr>
+                        <th>Emp ID</th>
+                        <th>Name & Contact</th>
+                        <th>Department</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </table>
             </div>
         </div>
 
-        <!-- Table Section -->
-        <div class="table-section">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h2 style="color: #2980b9; font-size: 1.5em; margin: 0;">👥 Workforce Directory</h2>
-                <button onclick="downloadExcel()" class="btn-green" style="width: auto; background-color: #16a085; padding: 10px 15px; font-size: 14px;">📥 Export Excel Sheet</button>
-            </div>
-            
-            <input type="text" id="searchInput" class="search-box" onkeyup="searchTable()" placeholder="🔍 Search by Name, ID, or Department...">
-            
-            <table id="usersTable">
-                <tr>
-                    <th>Emp ID</th>
-                    <th>Name & Contact</th>
-                    <th>Department</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-            </table>
+        <div class="footer">
+            🚀 Developed for Professional Placement Project | Powered by Kotlin & Web Technologies
         </div>
-    </div>
 
-    <div class="footer">
-        🚀 Developed for Professional Placement Project | Powered by Kotlin, SQLite & Web Technologies
-    </div>
+    </div> <!-- End of Dashboard Content -->
 
-    <script>
-        function toggleDarkMode() { document.body.classList.toggle("dark-mode"); }
-
-        function loadData() {
-            fetch('/api/users')
-                .then(response => response.json())
-                .then(data => {
-                    const table = document.getElementById('usersTable');
-                    table.innerHTML = '<tr><th>Emp ID</th><th>Name & Contact</th><th>Department</th><th>Status</th><th>Action</th></tr>';
-                    
-                    // Analytics Calculation
-                    let total = data.length;
-                    let wfh = data.filter(d => d.work_status === 'WFH').length;
-                    let onLeave = data.filter(d => d.work_status === 'On Leave').length;
-                    
-                    document.getElementById('totalCount').innerText = total;
-                    document.getElementById('wfhCount').innerText = wfh;
-                    document.getElementById('leaveCount').innerText = onLeave;
-
-                    data.forEach(emp => {
-                        let statusIcon = emp.work_status === 'Office' ? '🏢' : (emp.work_status === 'WFH' ? '💻' : '🏖️');
-                        table.innerHTML += "<tr>" + 
-                            "<td><strong>" + emp.emp_id + "</strong></td>" + 
-                            "<td>" + emp.emp_name + "<br><small style='color:gray'>📞 " + emp.mobile + "</small></td>" + 
-                            "<td>" + emp.department + "</td>" + 
-                            "<td>" + statusIcon + " " + emp.work_status + "</td>" + 
-                            "<td>" + 
-                                "<button onclick=\"speakStatus('" + emp.emp_name + "', '" + emp.emp_id + "', '" + emp.department + "', '" + emp.work_status + "')\" class='btn-blue' style='background-color: #8e44ad;'>🔊 Audio</button>" +
-                                "<button onclick=\"editUser(" + emp.id + ", '" + emp.emp_name + "', '" + emp.emp_id + "', '" + emp.department + "', '" + emp.work_status + "', '" + emp.mobile + "')\" class='btn-blue'>Edit</button>" + 
-                                "<button onclick='deleteUser(" + emp.id + ")' class='btn-red'>X</button>" + 
-                            "</td>" + 
-                            "</tr>";
-                    });
-                });
-        }
-
-        function speakStatus(name, id, dept, status) {
-            window.speechSynthesis.cancel();
-            let textToSpeak = "Employee " + name + ", ID " + id + ", is in the " + dept + " department. Current work status is " + status + ".";
-            let speech = new SpeechSynthesisUtterance(textToSpeak);
-            speech.rate = 0.9; window.speechSynthesis.speak(speech);
-        }
-
-        function searchTable() {
-            let input = document.getElementById("searchInput").value.toLowerCase();
-            let table = document.getElementById("usersTable");
-            let tr = table.getElementsByTagName("tr");
-            for (let i = 1; i < tr.length; i++) {
-                let idCol = tr[i].getElementsByTagName("td")[0];
-                let nameCol = tr[i].getElementsByTagName("td")[1];
-                let deptCol = tr[i].getElementsByTagName("td")[2];
-                if (idCol || nameCol || deptCol) {
-                    let textToSearch = (idCol.innerText + " " + nameCol.innerText + " " + deptCol.innerText).toLowerCase();
-                    tr[i].style.display = textToSearch.indexOf(input) > -1 ? "" : "none";
-                }
-            }
-        }
-
-        function editUser(id, name, empId, dept, status, mobile) {
-            // 🔒 PIN Security Check for Editing
-            let pin = prompt("🔐 Enter HR Admin PIN to Edit Record:");
-            if (pin === null) return; // Agar cancel kiya toh wapas chale jao
-            
-            if (pin !== "66372") {
-                alert("❌ Wrong PIN! Access Denied.");
-                return;
-            }
-
-            document.getElementById("userId").value = id;
-            document.getElementById("empNameInput").value = name;
-            document.getElementById("empIdInput").value = empId;
-            document.getElementById("departmentInput").value = dept;
-            document.getElementById("workStatusInput").value = status;
-            document.getElementById("mobileInput").value = mobile;
-            const btn = document.getElementById("submitBtn");
-            btn.innerText = "Update Record"; 
-            btn.className = "btn-orange";
-            window.scrollTo({ top: 0, behavior: 'smooth' }); // Upar form par le jao
-        }
-
-        function deleteUser(dbId) {
-            // 🔒 PIN Security Check for Deleting
-            let pin = prompt("🔐 Enter HR Admin PIN to Delete Record:");
-            if (pin === null) return;
-
-            if (pin !== "66372") {
-                alert("❌ Wrong PIN! Access Denied.");
-                return;
-            }
-
-            if(confirm("⚠️ Are you sure you want to remove this employee record?")) {
-                fetch('/api/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: dbId }) })
-                .then(response => response.json()).then(result => { loadData(); });
-            }
-        }
-
-        document.getElementById("addForm").addEventListener("submit", function(event) {
-            event.preventDefault();
-            const userId = document.getElementById("userId").value;
-            let apiUrl = userId !== "" ? '/api/update' : '/api/register';
-            
-            fetch(apiUrl, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    id: String(userId), emp_name: document.getElementById("empNameInput").value, 
-                    emp_id: document.getElementById("empIdInput").value, department: document.getElementById("departmentInput").value,
-                    work_status: document.getElementById("workStatusInput").value, mobile: document.getElementById("mobileInput").value
-                })
-            }).then(response => response.json()).then(result => {
-                if(result.status === "success") {
-                    document.getElementById("addForm").reset(); document.getElementById("userId").value = "";
-                    const btn = document.getElementById("submitBtn"); btn.innerText = "💾 Save Record"; btn.className = "btn-green";
-                    loadData();
-                }
-            });
-        });
-
-        function downloadExcel() { window.location.href = '/api/export'; }
-        loadData();
-    </script>
+    <!-- Link to JavaScript file -->
+    <script src="/script.js"></script>
 </body>
 </html>
