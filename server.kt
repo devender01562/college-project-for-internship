@@ -1,17 +1,26 @@
 import com.sun.net.httpserver.*
 import java.net.InetSocketAddress
-import java.sql.DriverManager
 import java.io.File
 
+// Employee Data Structure
+data class Employee(
+    val id: Int,
+    val empName: String,
+    val empId: String,
+    val department: String,
+    val workStatus: String,
+    val mobile: String
+)
+
 fun main() {
-    val dbUrl = "jdbc:sqlite:my_database.db"
-    Class.forName("org.sqlite.JDBC")
-    
-    val connection = DriverManager.getConnection(dbUrl)
-    val statement = connection.createStatement()
-    // 👉 NAYI TABLE: Ab Employees ki details save hongi
-    statement.execute("CREATE TABLE IF NOT EXISTS employees (id INTEGER PRIMARY KEY AUTOINCREMENT, emp_name TEXT, emp_id TEXT, department TEXT, work_status TEXT, mobile TEXT)")
-    println("📦 TechCorp HR Database Ready hai!")
+    // In-Memory Database (Server ki RAM mein data store rahega, Render par bhi chalega!)
+    val employeeList = mutableListOf<Employee>(
+        Employee(1, "Rahul Sharma", "EMP001", "IT", "Office", "9876543210"),
+        Employee(2, "Priya Verma", "EMP002", "HR", "WFH", "9123456789")
+    )
+    var idCounter = 3
+
+    println("📦 TechCorp HR In-Memory Database Ready hai!")
 
     val port = System.getenv("PORT")?.toInt() ?: 8080
     val myServer = HttpServer.create(InetSocketAddress("0.0.0.0", port), 0)
@@ -60,10 +69,10 @@ fun main() {
             val workStatus = incomingData.substringAfter("\"work_status\":\"").substringBefore("\"")
             val mobile = incomingData.substringAfter("\"mobile\":\"").substringBefore("\"")
 
-            val checkRs = connection.createStatement().executeQuery("SELECT count(*) AS count FROM employees WHERE emp_id = '$empId'")
-            val count = if (checkRs.next()) checkRs.getInt("count") else 0
+            // Check if Emp ID already exists
+            val exists = employeeList.any { it.empId == empId }
 
-            if (count > 0) {
+            if (exists) {
                 val jsonResponse = """{ "status": "error", "message": "❌ Yeh Employee ID pehle se registered hai!" }"""
                 val bytes = jsonResponse.toByteArray(Charsets.UTF_8)
                 request.responseHeaders.add("Content-Type", "application/json; charset=UTF-8")
@@ -72,9 +81,7 @@ fun main() {
                 out.write(bytes)
                 out.close()
             } else {
-                val insertQuery = "INSERT INTO employees (emp_name, emp_id, department, work_status, mobile) VALUES ('$empName', '$empId', '$department', '$workStatus', '$mobile')"
-                connection.createStatement().execute(insertQuery)
-
+                employeeList.add(Employee(idCounter++, empName, empId, department, workStatus, mobile))
                 val jsonResponse = """{ "status": "success", "message": "✅ Employee successfully add ho gaya!" }"""
                 val bytes = jsonResponse.toByteArray(Charsets.UTF_8)
                 request.responseHeaders.add("Content-Type", "application/json; charset=UTF-8")
@@ -89,15 +96,17 @@ fun main() {
     myServer.createContext("/api/update") { request: HttpExchange ->
         if (request.requestMethod == "POST") {
             val incomingData = request.requestBody.readBytes().toString(Charsets.UTF_8)
-            val id = incomingData.substringAfter("\"id\":\"").substringBefore("\"")
+            val id = incomingData.substringAfter("\"id\":\"").substringBefore("\"").toIntOrNull() ?: 0
             val empName = incomingData.substringAfter("\"emp_name\":\"").substringBefore("\"")
             val empId = incomingData.substringAfter("\"emp_id\":\"").substringBefore("\"")
             val department = incomingData.substringAfter("\"department\":\"").substringBefore("\"")
             val workStatus = incomingData.substringAfter("\"work_status\":\"").substringBefore("\"")
             val mobile = incomingData.substringAfter("\"mobile\":\"").substringBefore("\"")
 
-            val updateQuery = "UPDATE employees SET emp_name = '$empName', emp_id = '$empId', department = '$department', work_status = '$workStatus', mobile = '$mobile' WHERE id = $id"
-            connection.createStatement().execute(updateQuery)
+            val index = employeeList.indexOfFirst { it.id == id }
+            if (index != -1) {
+                employeeList[index] = Employee(id, empName, empId, department, workStatus, mobile)
+            }
 
             val jsonResponse = """{ "status": "success", "message": "✅ Employee detail update ho gayi!" }"""
             val bytes = jsonResponse.toByteArray(Charsets.UTF_8)
@@ -112,10 +121,9 @@ fun main() {
     myServer.createContext("/api/delete") { request: HttpExchange ->
         if (request.requestMethod == "POST") {
             val incomingData = request.requestBody.readBytes().toString(Charsets.UTF_8)
-            val idStr = incomingData.substringAfter("\"id\":").substringBefore("}").trim()
+            val idStr = incomingData.substringAfter("\"id\":").substringBefore("}").trim().toIntOrNull() ?: 0
 
-            val deleteQuery = "DELETE FROM employees WHERE id = $idStr"
-            connection.createStatement().execute(deleteQuery)
+            employeeList.removeIf { it.id == idStr }
 
             val jsonResponse = """{ "status": "success", "message": "Employee database se remove ho gaya!" }"""
             val bytes = jsonResponse.toByteArray(Charsets.UTF_8)
@@ -129,18 +137,11 @@ fun main() {
 
     myServer.createContext("/api/users") { request: HttpExchange ->
         if (request.requestMethod == "GET") {
-            val resultSet = connection.createStatement().executeQuery("SELECT * FROM employees")
             var jsonResponse = "["
             var isFirst = true
-            while (resultSet.next()) {
+            for (emp in employeeList) {
                 if (!isFirst) jsonResponse += ","
-                val id = resultSet.getInt("id")
-                val empName = resultSet.getString("emp_name")
-                val empId = resultSet.getString("emp_id")
-                val department = resultSet.getString("department")
-                val workStatus = resultSet.getString("work_status")
-                val mobile = resultSet.getString("mobile")
-                jsonResponse += """{"id": $id, "emp_name": "$empName", "emp_id": "$empId", "department": "$department", "work_status": "$workStatus", "mobile": "$mobile"}"""
+                jsonResponse += """{"id": ${emp.id}, "emp_name": "${emp.empName}", "emp_id": "${emp.empId}", "department": "${emp.department}", "work_status": "${emp.workStatus}", "mobile": "${emp.mobile}"}"""
                 isFirst = false
             }
             jsonResponse += "]"
@@ -156,18 +157,9 @@ fun main() {
 
     myServer.createContext("/api/export") { request: HttpExchange ->
         if (request.requestMethod == "GET") {
-            val resultSet = connection.createStatement().executeQuery("SELECT * FROM employees")
-            
             var csvData = "ID,Employee Name,Employee ID,Department,Work Status,Mobile No\n"
-            
-            while (resultSet.next()) {
-                val id = resultSet.getInt("id")
-                val empName = resultSet.getString("emp_name")
-                val empId = resultSet.getString("emp_id")
-                val department = resultSet.getString("department")
-                val workStatus = resultSet.getString("work_status")
-                val mobile = resultSet.getString("mobile")
-                csvData += "$id,$empName,$empId,$department,$workStatus,$mobile\n"
+            for (emp in employeeList) {
+                csvData += "${emp.id},${emp.empName},${emp.empId},${emp.department},${emp.workStatus},${emp.mobile}\n"
             }
 
             val bytes = csvData.toByteArray(Charsets.UTF_8)
@@ -183,6 +175,5 @@ fun main() {
 
     println("🚀 TECHCORP HR BACKEND START HO GAYA HAI!")
     println("👉 Server Cloud Port $port par chal raha hai...")
-    println("👉 Local Check ke liye yahan click karein: http://localhost:$port/")
     myServer.start()
 }
