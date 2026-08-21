@@ -15,8 +15,8 @@ data class Employee(
 fun main() {
     // In-Memory Database (Server ki RAM mein data store rahega, Render par bhi chalega!)
     val employeeList = mutableListOf<Employee>(
-        Employee(1, "Rahul Sharma", "EMP001", "IT", "Office", "9876543210"),
-        Employee(2, "Priya Verma", "EMP002", "HR", "WFH", "9123456789")
+        Employee(1, "Devender Singh", "101", "IT", "Office", "7014266372"),
+        Employee(2, "Varish Mehta", "102", "HR", "WFH", "9123456789")
     )
     var idCounter = 3
 
