@@ -1,26 +1,36 @@
-# TechCorp HR Management Portal 🚀
+# 🏢 TechCorp HR Management Portal
 
-Ek professional HR Portal jise Kotlin backend aur HTML/CSS frontend ke saath banaya gaya hai. Yeh portal employees ko manage karne, unhe register karne, aur data export karne mein madad karta hai.
-
-## 🛠️ Tech Stack
-- **Backend**: Kotlin (Java HttpServer)
-- **Frontend**: HTML5, CSS3, JavaScript
-- **Data Storage**: High-performance In-Memory Storage (Cloud-Compatible)
-- **Deployment**: Render
-
-## ✨ Key Features
-- **Employee Management**: Employees ko Add, Update, aur Delete karne ki suvidha.
-- **Data Export**: Poora employee database CSV format mein export karein.
-- **Cloud-Ready**: Render platform par chalne ke liye optimized, persistent performance ke saath.
-- **Secure**: Admin access ke liye PIN protection (66372).
-
-## 🚀 Deployment Status
-Yeh project [Render](https://render.com) par live hosted hai aur kisi bhi cloud environment mein seamless chalne ke liye optimized hai.
-
-## 💻 Kaise Run Karein?
-1. Repository clone karein.
-2. `server.kt` run karein.
-3. `http://localhost:8080` par portal open karein.
+An Enterprise Workforce & HR Analytics Dashboard built using **Kotlin HTTP Server**, **Persistent Storage**, and modern **Web Technologies**.
 
 ---
-*Developed by Devender Singh | BCA Student 2026*
+
+## 🌟 Features
+
+* **Dual-Layer Security Architecture:**
+  * **Portal Login PIN:** Protected entry requiring secure PIN (`9999`) to access the dashboard.
+  * **Admin Action Security:** Critical operations like **Edit** and **Delete** require high-level authorization PIN (`66372`).
+* **Live HR Analytics:** Real-time counters for Total Employees, Work From Home (WFH), and On Leave.
+* **Employee Management:** Complete CRUD workflows (Add, View, Edit, Delete employee records).
+* **Text-to-Speech (TTS) Voice Assistance:** Voice output for employee department and status overview.
+* **Live Search & Filter:** Instant workforce search by Name, Employee ID, or Department.
+* **Export to Excel/CSV:** One-click data export directly into spreadsheet format.
+* **Persistent File Storage:** Seamless server recovery with persistent data backup preventing data loss on restarts.
+* **Dark / Light Mode:** Built-in UI toggle for improved visual experience.
+
+---
+
+## 🛠️ Tech Stack
+
+* **Backend:** Kotlin (Native `com.sun.net.httpserver.HttpServer`)
+* **Storage:** Persistent File-Based CSV Storage (`employees_data.csv`)
+* **Frontend:** HTML5, CSS3, Modern JavaScript (ES6)
+* **Deployment:** Render Cloud Platform
+
+---
+
+## 🚀 Local Setup & Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone [https://github.com/](https://github.com/)<devender01562/college-project-for-internship.git
+   cd college-project-for-internship
