@@ -7,7 +7,7 @@ import java.net.URL
 val SUPABASE_URL = "https://liilnrgovltzidqeckit.supabase.co/rest/v1/employees"
 val SUPABASE_KEY = "sb_publishable_rvxO7mN-757eDN5cLxJFvA_8YHHSeJ7"
 
-fun callSupabase(endpoint: String, method: String, jsonBody: String? = null): String {
+fun callSupabase(endpoint: String, method: String, jsonBody: String? = null): Pair<Int, String> {
     val url = URL(endpoint)
     val conn = url.openConnection() as HttpURLConnection
     conn.requestMethod = method
@@ -24,7 +24,7 @@ fun callSupabase(endpoint: String, method: String, jsonBody: String? = null): St
     val responseCode = conn.responseCode
     val stream = if (responseCode in 200..299) conn.inputStream else conn.errorStream
     val response = stream?.bufferedReader()?.use { it.readText() } ?: ""
-    return response
+    return Pair(responseCode, response)
 }
 
 fun main() {
@@ -79,14 +79,15 @@ fun main() {
     myServer.createContext("/api/register") { request ->
         if (request.requestMethod == "POST") {
             val incomingData = request.requestBody.readBytes().toString(Charsets.UTF_8)
-            val empId = incomingData.substringAfter("\"emp_id\":\"").substringBefore("\"")
+            val (status, response) = callSupabase(SUPABASE_URL, "POST", incomingData)
             
-            val checkExisting = callSupabase("$SUPABASE_URL?emp_id=eq.$empId", "GET")
-            if (checkExisting.trim() != "[]" && checkExisting.trim().isNotEmpty()) {
+            if (status == 201 || status == 200) {
+                sendJsonResponse(request, """{ "status": "success", "message": "✅ Employee successfully add ho gaya!" }""")
+            } else if (response.contains("duplicate key") || response.contains("23505")) {
                 sendJsonResponse(request, """{ "status": "error", "message": "❌ Employee ID pehle se registered hai!" }""")
             } else {
-                callSupabase(SUPABASE_URL, "POST", incomingData)
-                sendJsonResponse(request, """{ "status": "success", "message": "✅ Employee successfully add ho gaya!" }""")
+                println("Supabase Error: $response")
+                sendJsonResponse(request, """{ "status": "error", "message": "Database error! Please check table setup." }""")
             }
         }
     }
@@ -120,28 +121,30 @@ fun main() {
 
     myServer.createContext("/api/users") { request ->
         if (request.requestMethod == "GET") {
-            val data = callSupabase("$SUPABASE_URL?select=*&order=id.asc", "GET")
+            val (_, data) = callSupabase("$SUPABASE_URL?select=*&order=id.asc", "GET")
             sendJsonResponse(request, if (data.isBlank()) "[]" else data)
         }
     }
 
     myServer.createContext("/api/export") { request ->
         if (request.requestMethod == "GET") {
-            val data = callSupabase("$SUPABASE_URL?select=*&order=id.asc", "GET")
+            val (_, data) = callSupabase("$SUPABASE_URL?select=*&order=id.asc", "GET")
             var csvData = "ID,Employee Name,Employee ID,Department,Work Status,Mobile No\n"
             
             if (data.startsWith("[") && data.endsWith("]")) {
-                val items = data.substring(1, data.length - 1).split("},{")
-                for (rawItem in items) {
-                    if (rawItem.isBlank()) continue
-                    val item = rawItem.replace("{", "").replace("}", "")
-                    val id = item.substringAfter("\"id\":").substringBefore(",")
-                    val name = item.substringAfter("\"emp_name\":\"").substringBefore("\"")
-                    val empId = item.substringAfter("\"emp_id\":\"").substringBefore("\"")
-                    val dept = item.substringAfter("\"department\":\"").substringBefore("\"")
-                    val status = item.substringAfter("\"work_status\":\"").substringBefore("\"")
-                    val mobile = item.substringAfter("\"mobile\":\"").substringBefore("\"")
-                    csvData += "$id,$name,$empId,$dept,$status,$mobile\n"
+                val clean = data.removeSurrounding("[", "]").trim()
+                if (clean.isNotEmpty()) {
+                    val items = clean.split("},{")
+                    for (rawItem in items) {
+                        val item = rawItem.replace("{", "").replace("}", "")
+                        val id = item.substringAfter("\"id\":").substringBefore(",")
+                        val name = item.substringAfter("\"emp_name\":\"").substringBefore("\"")
+                        val empId = item.substringAfter("\"emp_id\":\"").substringBefore("\"")
+                        val dept = item.substringAfter("\"department\":\"").substringBefore("\"")
+                        val status = item.substringAfter("\"work_status\":\"").substringBefore("\"")
+                        val mobile = item.substringAfter("\"mobile\":\"").substringBefore("\"")
+                        csvData += "$id,$name,$empId,$dept,$status,$mobile\n"
+                    }
                 }
             }
 
