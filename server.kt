@@ -34,7 +34,12 @@ fun saveEmployeesToFile(list: List<Employee>) {
 
 fun main() {
     val employeeList = loadEmployeesFromFile()
-    var idCounter = if (employeeList.isEmpty()) 1 else (employeeList.maxOf { it.id } + 1)
+    // ✅ Sahi line (har Kotlin version par chalti hai):
+   var maxId = 0
+    for (emp in employeeList) {
+        if (emp.id > maxId) maxId = emp.id
+    }
+var idCounter = maxId + 1
 
     val port = System.getenv("PORT")?.toInt() ?: 8080
     val myServer = HttpServer.create(InetSocketAddress("0.0.0.0", port), 0)
