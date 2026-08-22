@@ -1,6 +1,6 @@
 // --- Security PINs Configuration ---
-const ADMIN_LOGIN_PIN = "9999"; // Portal Login PIN
-const ACTION_PIN = "66372";     // Edit aur Delete karne ke liye PIN
+const ADMIN_LOGIN_PIN = "9999"; 
+const ACTION_PIN = "66372";     
 
 // --- Login Function ---
 function checkLogin() {
@@ -24,15 +24,25 @@ function loadData() {
         .then(response => response.json())
         .then(data => {
             const table = document.getElementById('usersTable');
+            if (!table) return;
             table.innerHTML = '<tr><th>Emp ID</th><th>Name & Contact</th><th>Department</th><th>Status</th><th>Action</th></tr>';
             
+            if (!Array.isArray(data)) {
+                console.error("Data is not an array:", data);
+                return;
+            }
+
             let total = data.length;
             let wfh = data.filter(d => d.work_status === 'WFH').length;
             let onLeave = data.filter(d => d.work_status === 'On Leave').length;
             
-            document.getElementById('totalCount').innerText = total;
-            document.getElementById('wfhCount').innerText = wfh;
-            document.getElementById('leaveCount').innerText = onLeave;
+            const totalEl = document.getElementById('totalCount');
+            const wfhEl = document.getElementById('wfhCount');
+            const leaveEl = document.getElementById('leaveCount');
+
+            if (totalEl) totalEl.innerText = total;
+            if (wfhEl) wfhEl.innerText = wfh;
+            if (leaveEl) leaveEl.innerText = onLeave;
 
             data.forEach(emp => {
                 let statusIcon = emp.work_status === 'Office' ? '🏢' : (emp.work_status === 'WFH' ? '💻' : '🏖️');
@@ -48,7 +58,8 @@ function loadData() {
                     "</td>" + 
                     "</tr>";
             });
-        });
+        })
+        .catch(err => console.error("Load error:", err));
 }
 
 function speakStatus(name, id, dept, status) {
@@ -74,7 +85,7 @@ function searchTable() {
     }
 }
 
-// --- Edit Record (Protected by ACTION_PIN) ---
+// --- Edit Record ---
 function editUser(id, name, empId, dept, status, mobile) {
     let pin = prompt("🔐 Enter HR Admin PIN to Edit Record:");
     if (pin === null) return;
@@ -95,7 +106,7 @@ function editUser(id, name, empId, dept, status, mobile) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// --- Delete Record (Protected by ACTION_PIN) ---
+// --- Delete Record ---
 function deleteUser(dbId) {
     let pin = prompt("🔐 Enter HR Admin PIN to Delete Record:");
     if (pin === null) return;
@@ -113,41 +124,54 @@ function deleteUser(dbId) {
         .then(response => response.json())
         .then(result => { 
             loadData(); 
-        });
+        })
+        .catch(err => console.error("Delete error:", err));
     }
 }
 
-// --- Save / Update Form Submit Event Listener ---
-document.getElementById("addForm").addEventListener("submit", function(event) {
-    event.preventDefault();
-    const userId = document.getElementById("userId").value;
-    let apiUrl = userId !== "" ? '/api/update' : '/api/register';
-    
-    fetch(apiUrl, {
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-            id: String(userId), 
-            emp_name: document.getElementById("empNameInput").value, 
-            emp_id: document.getElementById("empIdInput").value, 
-            department: document.getElementById("departmentInput").value,
-            work_status: document.getElementById("workStatusInput").value, 
-            mobile: document.getElementById("mobileInput").value
-        })
-    }).then(response => response.json()).then(result => {
-        if(result.status === "success") {
-            document.getElementById("addForm").reset(); 
-            document.getElementById("userId").value = "";
-            const btn = document.getElementById("submitBtn"); 
-            btn.innerText = "💾 Save Record"; 
-            btn.className = "btn-green";
-            loadData();
-        } else {
-            alert(result.message);
-        }
-    }).catch(err => {
-        console.error("Save error:", err);
-    });
+// --- Form Submit ---
+document.addEventListener("DOMContentLoaded", function() {
+    const form = document.getElementById("addForm");
+    if (form) {
+        form.addEventListener("submit", function(event) {
+            event.preventDefault();
+            const userId = document.getElementById("userId").value;
+            let apiUrl = (userId && userId.trim() !== "") ? '/api/update' : '/api/register';
+            
+            const payload = {
+                emp_name: document.getElementById("empNameInput").value, 
+                emp_id: document.getElementById("empIdInput").value, 
+                department: document.getElementById("departmentInput").value,
+                work_status: document.getElementById("workStatusInput").value, 
+                mobile: document.getElementById("mobileInput").value
+            };
+
+            if (userId && userId.trim() !== "") {
+                payload.id = userId;
+            }
+
+            fetch(apiUrl, {
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(result => {
+                alert(result.message);
+                if(result.status === "success") {
+                    document.getElementById("addForm").reset(); 
+                    document.getElementById("userId").value = "";
+                    const btn = document.getElementById("submitBtn"); 
+                    btn.innerText = "💾 Save Record"; 
+                    btn.className = "btn-green";
+                    loadData();
+                }
+            })
+            .catch(err => {
+                alert("Error connecting to server: " + err.message);
+            });
+        });
+    }
 });
 
 function downloadExcel() { 

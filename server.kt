@@ -7,24 +7,37 @@ import java.net.URL
 val SUPABASE_URL = "https://liilnrgovltzidqeckit.supabase.co/rest/v1/employees"
 val SUPABASE_KEY = "sb_publishable_rvxO7mN-757eDN5cLxJFvA_8YHHSeJ7"
 
+fun escapeJson(text: String): String {
+    return text.replace("\\", "\\\\")
+               .replace("\"", "\\\"")
+               .replace("\n", " ")
+               .replace("\r", "")
+}
+
 fun callSupabase(endpoint: String, method: String, jsonBody: String? = null): Pair<Int, String> {
-    val url = URL(endpoint)
-    val conn = url.openConnection() as HttpURLConnection
-    conn.requestMethod = method
-    conn.setRequestProperty("apikey", SUPABASE_KEY)
-    conn.setRequestProperty("Authorization", "Bearer $SUPABASE_KEY")
-    conn.setRequestProperty("Content-Type", "application/json")
-    conn.setRequestProperty("Prefer", "return=representation")
+    return try {
+        val url = URL(endpoint)
+        val conn = url.openConnection() as HttpURLConnection
+        conn.connectTimeout = 8000
+        conn.readTimeout = 8000
+        conn.requestMethod = method
+        conn.setRequestProperty("apikey", SUPABASE_KEY)
+        conn.setRequestProperty("Authorization", "Bearer $SUPABASE_KEY")
+        conn.setRequestProperty("Content-Type", "application/json")
+        conn.setRequestProperty("Prefer", "return=representation")
 
-    if (jsonBody != null && (method == "POST" || method == "PATCH")) {
-        conn.doOutput = true
-        conn.outputStream.write(jsonBody.toByteArray(Charsets.UTF_8))
+        if (jsonBody != null && (method == "POST" || method == "PATCH")) {
+            conn.doOutput = true
+            conn.outputStream.use { it.write(jsonBody.toByteArray(Charsets.UTF_8)) }
+        }
+
+        val responseCode = conn.responseCode
+        val stream = if (responseCode in 200..299) conn.inputStream else conn.errorStream
+        val response = stream?.bufferedReader()?.use { it.readText() } ?: ""
+        Pair(responseCode, response)
+    } catch (e: Exception) {
+        Pair(500, e.message ?: "Network connection error")
     }
-
-    val responseCode = conn.responseCode
-    val stream = if (responseCode in 200..299) conn.inputStream else conn.errorStream
-    val response = stream?.bufferedReader()?.use { it.readText() } ?: ""
-    return Pair(responseCode, response)
 }
 
 fun main() {
@@ -79,15 +92,23 @@ fun main() {
     myServer.createContext("/api/register") { request ->
         if (request.requestMethod == "POST") {
             val incomingData = request.requestBody.readBytes().toString(Charsets.UTF_8)
-            val (status, response) = callSupabase(SUPABASE_URL, "POST", incomingData)
+            val empName = incomingData.substringAfter("\"emp_name\":\"").substringBefore("\"")
+            val empId = incomingData.substringAfter("\"emp_id\":\"").substringBefore("\"")
+            val department = incomingData.substringAfter("\"department\":\"").substringBefore("\"")
+            val workStatus = incomingData.substringAfter("\"work_status\":\"").substringBefore("\"")
+            val mobile = incomingData.substringAfter("\"mobile\":\"").substringBefore("\"")
+
+            val insertPayload = """{"emp_name":"$empName","emp_id":"$empId","department":"$department","work_status":"$workStatus","mobile":"$mobile"}"""
+            val (status, response) = callSupabase(SUPABASE_URL, "POST", insertPayload)
             
             if (status == 201 || status == 200) {
-                sendJsonResponse(request, """{ "status": "success", "message": "✅ Employee successfully add ho gaya!" }""")
-            } else if (response.contains("duplicate key") || response.contains("23505")) {
-                sendJsonResponse(request, """{ "status": "error", "message": "❌ Employee ID pehle se registered hai!" }""")
+                sendJsonResponse(request, """{"status":"success","message":"✅ Employee successfully add ho gaya!"}""")
+            } else if (response.contains("23505") || response.contains("duplicate") || response.contains("unique")) {
+                sendJsonResponse(request, """{"status":"error","message":"❌ Employee ID pehle se registered hai!"}""")
             } else {
-                println("Supabase Error: $response")
-                sendJsonResponse(request, """{ "status": "error", "message": "Database error! Please check table setup." }""")
+                println("Supabase Register Error ($status): $response")
+                val safeErr = escapeJson(response)
+                sendJsonResponse(request, """{"status":"error","message":"Supabase ($status): $safeErr"}""")
             }
         }
     }
@@ -95,7 +116,7 @@ fun main() {
     myServer.createContext("/api/update") { request ->
         if (request.requestMethod == "POST") {
             val incomingData = request.requestBody.readBytes().toString(Charsets.UTF_8)
-            val id = incomingData.substringAfter("\"id\":\"").substringBefore("\"").toIntOrNull() ?: 0
+            val id = incomingData.substringAfter("\"id\":").substringBefore(",").replace("\"", "").trim().toIntOrNull() ?: 0
             
             val empName = incomingData.substringAfter("\"emp_name\":\"").substringBefore("\"")
             val empId = incomingData.substringAfter("\"emp_id\":\"").substringBefore("\"")
@@ -105,24 +126,24 @@ fun main() {
             
             val patchBody = """{"emp_name":"$empName","emp_id":"$empId","department":"$department","work_status":"$workStatus","mobile":"$mobile"}"""
             callSupabase("$SUPABASE_URL?id=eq.$id", "PATCH", patchBody)
-            sendJsonResponse(request, """{ "status": "success", "message": "✅ Employee detail update ho gayi!" }""")
+            sendJsonResponse(request, """{"status":"success","message":"✅ Employee detail update ho gayi!"}""")
         }
     }
 
     myServer.createContext("/api/delete") { request ->
         if (request.requestMethod == "POST") {
             val incomingData = request.requestBody.readBytes().toString(Charsets.UTF_8)
-            val idStr = incomingData.substringAfter("\"id\":").substringBefore("}").trim().toIntOrNull() ?: 0
+            val idStr = incomingData.substringAfter("\"id\":").substringBefore("}").replace("\"", "").trim().toIntOrNull() ?: 0
             
             callSupabase("$SUPABASE_URL?id=eq.$idStr", "DELETE")
-            sendJsonResponse(request, """{ "status": "success", "message": "Employee remove ho gaya!" }""")
+            sendJsonResponse(request, """{"status":"success","message":"Employee remove ho gaya!"}""")
         }
     }
 
     myServer.createContext("/api/users") { request ->
         if (request.requestMethod == "GET") {
             val (_, data) = callSupabase("$SUPABASE_URL?select=*&order=id.asc", "GET")
-            sendJsonResponse(request, if (data.isBlank()) "[]" else data)
+            sendJsonResponse(request, if (data.isBlank() || !data.startsWith("[")) "[]" else data)
         }
     }
 
@@ -157,7 +178,7 @@ fun main() {
         }
     }
 
-    println("🚀 TECHCORP HR BACKEND RUNNING WITH SUPABASE CLOUD DATABASE ON PORT $port")
+    println("🚀 SERVER READY ON PORT $port")
     myServer.start()
 }
 
